@@ -1,3 +1,7 @@
+pub mod models;
+pub mod routes;
+pub mod schema;
+
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use std::env;
