@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Debug, Clone, Queryable, Insertable, AsChangeset)]
 #[diesel(table_name = crate::schema::posts)]
 pub struct Post {
-    pub id: i32,
+    pub id: String,
     pub title: String,
     pub body: String,
     pub published: bool,

@@ -1,15 +1,14 @@
+use crate::handlers::post_handler;
 use actix_web::{web, HttpResponse, Responder};
 
 pub fn configure(cfg: &mut web::ServiceConfig) {
     cfg.service(
-        web::resource("/users").route(web::get().to(my_handler)),
-        // .route(web::get().to(user_handler::get_users))
-        // .route(web::post().to(user_handler::create_user)),
+        web::resource("/posts").route(web::get().to(post_handler::get_posts)), // .route(web::post().to(post_handler::create_posts)),
     );
-
+    cfg.service(web::resource("/posts/{id}").route(web::get().to(post_handler::get_posts_by_id)));
     cfg.service(web::resource("/").route(web::get().to(my_handler)));
 }
 
 async fn my_handler() -> impl Responder {
-    HttpResponse::Ok().body("Hello, Actix!")
+    HttpResponse::Ok().body("Hello, Actix!222222")
 }
