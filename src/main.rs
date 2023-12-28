@@ -1,11 +1,11 @@
 use actix_web::{
+    http::StatusCode,
+    middleware::ErrorHandlers,
     web::{get, scope, Data},
     App, HttpResponse, HttpServer,
 };
 use diesel::RunQueryDsl;
 use my_actix_app::*;
-
-pub mod models;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -21,6 +21,10 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(move || {
         App::new()
+            .wrap(
+                ErrorHandlers::new()
+                    .handler(StatusCode::INTERNAL_SERVER_ERROR, error::add_error_header),
+            )
             .app_data(Data::new(pool.clone()))
             .service(scope("/api").configure(routes::configure))
             .route(

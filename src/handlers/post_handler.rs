@@ -1,5 +1,5 @@
+use crate::error::MyError;
 use crate::models::posts::Post;
-use crate::schema::newtable::dsl::*;
 use crate::schema::posts::{self, dsl::*};
 use crate::PgPool;
 use actix_web::{http::header::ContentType, web::Data, HttpRequest, HttpResponse, Result};
@@ -22,24 +22,32 @@ pub async fn get_posts(pool: Data<PgPool>) -> Result<HttpResponse> {
         .body(json_bytes))
 }
 
-pub async fn get_posts_by_id(req: HttpRequest, pool: Data<PgPool>) -> Result<HttpResponse> {
+pub async fn get_posts_by_id(
+    req: HttpRequest,
+    pool: Data<PgPool>,
+) -> Result<HttpResponse, MyError> {
     if let Some(post_id) = req.match_info().get("id") {
         let conn = &mut pool.get().expect("Couldn't get DB connection from pool");
+
         if let Ok(post_data) = posts
-            .find(post_id)
+            // .find(post_id)
+            .filter(posts::id.eq(post_id))
             .select((body, title, posts::id, published))
             .get_result::<(String, String, String, bool)>(conn)
+        // .first::<(String, String, String, bool)>(conn)
+        // .load::<(String, String, String, bool)>(conn)
         {
             let json_bytes = to_vec(&post_data).expect("Failed to serialize posts to JSON");
             Ok(HttpResponse::Ok()
                 .content_type(ContentType::json())
                 .body(json_bytes))
         } else {
-            // 에러가 발생한 경우
-            Err(HttpResponse::InternalServerError().into())
+            // id로 조회했는데 없을 경우
+            // Err(MyError::InternalError)
+            Ok(HttpResponse::Ok().body("no result"))
         }
     } else {
         // id가 없는 경우에도 에러 처리
-        Err(HttpResponse::BadRequest().into())
+        Err(MyError::BadClientData)
     }
 }
