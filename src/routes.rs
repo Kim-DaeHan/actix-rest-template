@@ -5,9 +5,12 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::resource("/posts")
             .route(web::get().to(post_handler::get_posts))
-            .route(web::post().to(post_handler::create_posts)),
+            .route(web::post().to(post_handler::create_posts))
+            .route(web::put().to(post_handler::update_posts)),
     );
-    cfg.service(web::resource("/posts/{id}").route(web::get().to(post_handler::get_posts_by_id)));
+    cfg.service(
+        web::resource("/posts/{id}").route(web::get().to(post_handler::get_posts_by_id)), // .route(web::delete().to(post_handler::delete_posts_by_id)),
+    );
     cfg.service(web::resource("/").route(web::get().to(my_handler)));
 }
 

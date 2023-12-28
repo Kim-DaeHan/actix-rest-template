@@ -69,8 +69,6 @@ pub async fn create_posts(
     _body: web::Json<PostData>,
     pool: Data<PgPool>,
 ) -> Result<HttpResponse, MyError> {
-    // let date = Some(Utc::now().naive_utc());
-
     let post = PostData {
         id: Some(Uuid::new_v4().to_string()),
         .._body.into_inner()
@@ -79,9 +77,41 @@ pub async fn create_posts(
     let conn = &mut pool.get().expect("Couldn't get DB connection from pool");
 
     diesel::insert_into(posts)
-        .values(&post)
+        .values(post)
         .execute(conn)
         .expect("Error creating new post");
+
+    Ok(HttpResponse::Ok()
+        .content_type(ContentType::json())
+        .body("creating new post"))
+}
+
+pub async fn update_posts(
+    _body: web::Json<PostData>,
+    pool: Data<PgPool>,
+) -> Result<HttpResponse, MyError> {
+    let updated_date = Some(Utc::now().naive_utc());
+    let post_data = _body.into_inner();
+    if post_data.id.is_some() {
+        let conn = &mut pool.get().expect("Couldn't get DB connection from pool");
+
+        let post = PostData {
+            id: None,
+            updated_at: updated_date,
+            ..post_data
+        };
+
+        // println!("{:?}", post_data.id);
+        let update_post = diesel::update(posts.find(post_data.id.unwrap()))
+            .set(post)
+            .get_result::<Post>(conn)
+            .expect("Error updating todo by id");
+
+        println!("{:?}", update_post);
+    } else {
+        //return이 있으면 update_posts(전체 함수)의 반환값, 없으면 해당 블록의 반환 값
+        return Err(MyError::BadClientData);
+    };
 
     Ok(HttpResponse::Ok()
         .content_type(ContentType::json())
