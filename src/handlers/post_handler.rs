@@ -5,10 +5,13 @@ use crate::PgPool;
 use actix_web::{http::header::ContentType, web, web::Data, HttpRequest, HttpResponse, Result};
 use chrono::Utc;
 use diesel::prelude::*;
+use log::{info, warn};
 use serde_json::to_vec;
 use uuid::Uuid;
 
 pub async fn get_posts(pool: Data<PgPool>) -> Result<HttpResponse, MyError> {
+    info!("로깅 테스트");
+    warn!("로깅 테스트2");
     let conn = &mut pool.get().expect("Couldn't get DB connection from pool");
     // use crate::schema::posts::{dsl::*}로 인해서 posts::table을 posts로 사용가능
     let post_list = posts.load::<Post>(conn).expect("error");
