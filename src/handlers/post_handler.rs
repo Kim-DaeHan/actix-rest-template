@@ -101,16 +101,15 @@ pub async fn update_posts(
             ..post_data
         };
 
-        // println!("{:?}", post_data.id);
-        // let update_post = diesel::update(posts.find(post_data.id.unwrap()))
-        //     .set(post)
-        //     .get_result::<Post>(conn)
-        //     .expect("Error updating todo by id");
-        let update_post = diesel::update(posts.find(post_data.id.unwrap()))
+        if diesel::update(posts.find(post_data.id.unwrap()))
             .set(post)
+            // .get_result::<Post>(conn)
             .execute(conn)
-            .expect("Error updating todo by id");
-        println!("{:?}", update_post);
+            .expect("Error updating todo by id")
+            == 0
+        {
+            return Err(MyError::BadClientData);
+        }
     } else {
         //return이 있으면 update_posts(전체 함수)의 반환값, 없으면 해당 블록의 반환 값
         return Err(MyError::BadClientData);
