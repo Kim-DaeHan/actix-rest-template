@@ -2,6 +2,7 @@ use super::error::PostError;
 use crate::database::PgPool;
 use crate::models::post_model::{Post, PostData};
 use crate::schema::posts::{self, dsl::*};
+use actix_web::Responder;
 use actix_web::{http::header::ContentType, web, web::Data, HttpRequest, HttpResponse, Result};
 use chrono::Utc;
 use diesel::prelude::*;
@@ -9,7 +10,7 @@ use log::{info, warn};
 use serde_json::to_vec;
 use uuid::Uuid;
 
-pub async fn get_posts(pool: Data<PgPool>) -> Result<HttpResponse, PostError> {
+pub async fn get_posts(pool: Data<PgPool>) -> Result<impl Responder, PostError> {
     info!("로깅 테스트");
     warn!("로깅 테스트2");
     let conn = &mut pool.get().expect("Couldn't get DB connection from pool");
