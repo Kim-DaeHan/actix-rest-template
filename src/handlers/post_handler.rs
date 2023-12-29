@@ -105,7 +105,7 @@ pub async fn update_posts(
             .set(post)
             // .get_result::<Post>(conn)
             .execute(conn)
-            .expect("Error updating todo by id")
+            .expect("Error updating post by id")
             == 0
         {
             return Err(MyError::BadClientData);
@@ -117,5 +117,29 @@ pub async fn update_posts(
 
     Ok(HttpResponse::Ok()
         .content_type(ContentType::json())
-        .body("creating new post"))
+        .body("created new post"))
+}
+
+pub async fn delete_posts_by_id(
+    req: HttpRequest,
+    pool: Data<PgPool>,
+) -> Result<HttpResponse, MyError> {
+    if let Some(post_id) = req.match_info().get("id") {
+        let conn = &mut pool.get().expect("Couldn't get DB connection from pool");
+
+        if diesel::delete(posts.find(post_id))
+            .execute(conn)
+            .expect("Error deleting post by id")
+            == 0
+        {
+            return Err(MyError::BadClientData);
+        }
+
+        Ok(HttpResponse::Ok()
+            .content_type(ContentType::json())
+            .body("deleted post"))
+    } else {
+        // id가 없는 경우에도 에러 처리
+        Err(MyError::BadClientData)
+    }
 }
