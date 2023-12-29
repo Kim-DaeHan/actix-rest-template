@@ -1,7 +1,7 @@
-use crate::error::MyError;
-use crate::models::posts::{Post, PostData};
+use super::error::PostError;
+use crate::database::PgPool;
+use crate::models::post_model::{Post, PostData};
 use crate::schema::posts::{self, dsl::*};
-use crate::PgPool;
 use actix_web::{http::header::ContentType, web, web::Data, HttpRequest, HttpResponse, Result};
 use chrono::Utc;
 use diesel::prelude::*;
@@ -9,7 +9,7 @@ use log::{info, warn};
 use serde_json::to_vec;
 use uuid::Uuid;
 
-pub async fn get_posts(pool: Data<PgPool>) -> Result<HttpResponse, MyError> {
+pub async fn get_posts(pool: Data<PgPool>) -> Result<HttpResponse, PostError> {
     info!("로깅 테스트");
     warn!("로깅 테스트2");
     let conn = &mut pool.get().expect("Couldn't get DB connection from pool");
@@ -29,14 +29,14 @@ pub async fn get_posts(pool: Data<PgPool>) -> Result<HttpResponse, MyError> {
             .body(json_bytes))
     } else {
         // 서버 에러
-        Err(MyError::InternalError)
+        Err(PostError::InternalError)
     }
 }
 
 pub async fn get_posts_by_id(
     req: HttpRequest,
     pool: Data<PgPool>,
-) -> Result<HttpResponse, MyError> {
+) -> Result<HttpResponse, PostError> {
     if let Some(post_id) = req.match_info().get("id") {
         let conn = &mut pool.get().expect("Couldn't get DB connection from pool");
 
@@ -64,14 +64,14 @@ pub async fn get_posts_by_id(
         }
     } else {
         // id가 없는 경우에도 에러 처리
-        Err(MyError::BadClientData)
+        Err(PostError::BadClientData)
     }
 }
 
 pub async fn create_posts(
     _body: web::Json<PostData>,
     pool: Data<PgPool>,
-) -> Result<HttpResponse, MyError> {
+) -> Result<HttpResponse, PostError> {
     let post = PostData {
         id: Some(Uuid::new_v4().to_string()),
         .._body.into_inner()
@@ -92,7 +92,7 @@ pub async fn create_posts(
 pub async fn update_posts(
     _body: web::Json<PostData>,
     pool: Data<PgPool>,
-) -> Result<HttpResponse, MyError> {
+) -> Result<HttpResponse, PostError> {
     let post_data = _body.into_inner();
     let updated_date = Some(Utc::now().naive_utc());
     if post_data.id.is_some() {
@@ -111,7 +111,7 @@ pub async fn update_posts(
             .expect("Error updating post by id")
             == 0
         {
-            Err(MyError::BadClientData)
+            Err(PostError::BadClientData)
         } else {
             Ok(HttpResponse::Ok()
                 .content_type(ContentType::json())
@@ -119,14 +119,14 @@ pub async fn update_posts(
         }
     } else {
         //return이 있으면 update_posts(전체 함수)의 반환값, 없으면 해당 블록의 반환 값
-        Err(MyError::BadClientData)
+        Err(PostError::BadClientData)
     }
 }
 
 pub async fn delete_posts_by_id(
     req: HttpRequest,
     pool: Data<PgPool>,
-) -> Result<HttpResponse, MyError> {
+) -> Result<HttpResponse, PostError> {
     if let Some(post_id) = req.match_info().get("id") {
         let conn = &mut pool.get().expect("Couldn't get DB connection from pool");
 
@@ -135,7 +135,7 @@ pub async fn delete_posts_by_id(
             .expect("Error deleting post by id")
             == 0
         {
-            Err(MyError::BadClientData)
+            Err(PostError::BadClientData)
         } else {
             Ok(HttpResponse::Ok()
                 .content_type(ContentType::json())
@@ -143,6 +143,6 @@ pub async fn delete_posts_by_id(
         }
     } else {
         // id가 없는 경우에도 에러 처리
-        Err(MyError::BadClientData)
+        Err(PostError::BadClientData)
     }
 }

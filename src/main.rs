@@ -15,7 +15,7 @@ async fn main() -> std::io::Result<()> {
     // 로깅 초기화
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
 
-    let pool = establish_connection();
+    let pool = database::establish_connection();
     let mut connection = pool.get().expect("Failed to get connection from pool");
 
     match diesel::sql_query("SELECT 1").execute(&mut connection) {
@@ -26,10 +26,10 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             // 에러 핸들러 미들웨어
-            .wrap(
-                ErrorHandlers::new()
-                    .handler(StatusCode::INTERNAL_SERVER_ERROR, error::add_error_header),
-            )
+            .wrap(ErrorHandlers::new().handler(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                error_handler::error_handler,
+            ))
             // 로깅 미들웨어
             .wrap(Logger::default())
             // Cors 미들웨어 추가
@@ -55,22 +55,21 @@ async fn main() -> std::io::Result<()> {
 
 // actix-cors
 // allow_any_origin():
-
 // 모든 오리진(Origin)을 허용합니다. 크로스 도메인 요청을 보내는 모든 클라이언트를 허용하겠다는 의미입니다.
 // 보안상 주의해야 하며, 프로덕션 환경에서는 필요한 경우에만 사용하는 것이 좋습니다.
-// supports_credentials():
 
+// supports_credentials():
 // 자격 증명(credential)을 허용합니다. 즉, 클라이언트가 인증 정보(쿠키, HTTP 인증 등)를 서버에 제공할 수 있도록 합니다.
 // 이 옵션을 사용하려면 클라이언트와 서버 모두에서 자격 증명이 활성화되어 있어야 합니다.
+
 // allowed_methods():
-
 // 허용되는 HTTP 메서드를 지정합니다. 여기서는 "GET", "POST", "PUT", "DELETE"를 허용하도록 설정되어 있습니다.
-// allowed_headers():
 
+// allowed_headers():
 // 허용되는 HTTP 헤더를 지정합니다. 주로 클라이언트가 특정 헤더를 사용하여 서버에 추가 정보를 전달할 때 사용됩니다.
 // 예제에서는 "Authorization"과 "Accept" 헤더를 허용하도록 설정되어 있습니다.
-// max_age():
 
+// max_age():
 // 사전 검사 요청의 결과를 캐시할 시간을 지정합니다. 이는 브라우저에서 사전 검사 요청의 결과를 캐시하여 동일한 요청에 대해 추가적인 사전 검사를 수행하지 않도록 합니다.
 // 예제에서는 3600초(1시간) 동안 캐시하도록 설정되어 있습니다.
 
