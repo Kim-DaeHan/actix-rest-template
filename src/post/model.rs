@@ -37,7 +37,7 @@ pub struct PostData {
 // 따라서 &'a str과 같이 라이프타임이 있는 참조를 사용하여 문자열을 참조하고, 데이터베이스에는 참조만 전달합니다.
 
 impl Post {
-    pub fn get_posts(pool: Data<PgPool>) -> Result<Vec<(String, String, String, bool)>, Error> {
+    pub fn get_posts(pool: &Data<PgPool>) -> Result<Vec<(String, String, String, bool)>, Error> {
         let conn = &mut pool.get().expect("Couldn't get DB connection from pool");
 
         posts
@@ -49,5 +49,22 @@ impl Post {
         let conn = &mut pool.get().expect("Couldn't get DB connection from pool");
         // use crate::schema::posts::{dsl::*}로 인해서 posts::table을 posts로 사용가능
         posts.load::<Post>(conn)
+    }
+
+    pub fn get_posts_by_id(
+        pool: &Data<PgPool>,
+        post_id: &str,
+    ) -> Result<(String, String, String, bool), Error> {
+        let conn = &mut pool.get().expect("Couldn't get DB connection from pool");
+        posts
+            .find(post_id)
+            // .filter(posts::id.eq(post_id))
+            .select((body, title, posts::id, published))
+            // get_result: 주어진 조건에 해당하는 하나의 결과를 반환, 결과가 여러 개거나 없으면 에러(정확히 하나의 결과가 예상되는 상황)
+            .get_result::<(String, String, String, bool)>(conn)
+        // first: 조건에 해당하는 모든 결과 중 첫 번째 결과 반환
+        // .first::<(String, String, String, bool)>(conn)
+        // load: 여러 레코드를 로드하고 벡터로 반환, 결과를 단일 값이 아닌 여러 레코드로 받아오려 할 때 사용
+        // .load::<(String, String, String, bool)>(conn)
     }
 }
