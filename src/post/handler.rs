@@ -1,7 +1,7 @@
 use super::error::PostError;
 use super::model::{Post, PostData};
 use crate::database::PgPool;
-use crate::schema::posts::{self, dsl::*};
+use crate::schema::posts::dsl::*;
 use actix_web::Responder;
 use actix_web::{http::header::ContentType, web, web::Data, HttpRequest, HttpResponse, Result};
 use chrono::Utc;
