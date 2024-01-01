@@ -1,6 +1,6 @@
 use super::error::PostError;
+use super::model::{Post, PostData};
 use crate::database::PgPool;
-use crate::models::post_model::{Post, PostData};
 use crate::schema::posts::{self, dsl::*};
 use actix_web::Responder;
 use actix_web::{http::header::ContentType, web, web::Data, HttpRequest, HttpResponse, Result};
@@ -13,16 +13,11 @@ use uuid::Uuid;
 pub async fn get_posts(pool: Data<PgPool>) -> Result<impl Responder, PostError> {
     info!("로깅 테스트");
     warn!("로깅 테스트2");
-    let conn = &mut pool.get().expect("Couldn't get DB connection from pool");
-    // use crate::schema::posts::{dsl::*}로 인해서 posts::table을 posts로 사용가능
-    let post_list = posts.load::<Post>(conn).expect("error");
+
+    let post_list = Post::get_posts_load(&pool);
 
     println!("{:?}", post_list);
-    if let Ok(post_data) =
-        posts
-            .select((body, title, posts::id, published))
-            .load::<(String, String, String, bool)>(conn)
-    {
+    if let Ok(post_data) = Post::get_posts(pool) {
         let json_bytes = to_vec(&post_data).expect("Failed to serialize posts to JSON");
 
         Ok(HttpResponse::Ok()
