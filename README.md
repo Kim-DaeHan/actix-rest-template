@@ -59,3 +59,17 @@ This is a template project for building a REST API using the Actix web framework
   ```bash
   curl -X DELETE http://localhost:8080/api/posts/{id}
   ```
+
+## Docker start
+
+1. docker build:
+
+   ```bash
+   docker build -t actix_rest_template .
+   ```
+
+2. docker run:
+
+   ```bash
+   docker run -p 8080:8080 actix_rest_template
+   ```
