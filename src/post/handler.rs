@@ -1,14 +1,10 @@
 use super::error::PostError;
 use super::model::{Post, PostData};
 use crate::database::PgPool;
-use crate::schema::posts::dsl::*;
 use actix_web::Responder;
 use actix_web::{http::header::ContentType, web, web::Data, HttpRequest, HttpResponse, Result};
-use chrono::Utc;
-use diesel::prelude::*;
 use log::{info, warn};
 use serde_json::to_vec;
-use uuid::Uuid;
 
 pub async fn get_posts(pool: Data<PgPool>) -> Result<impl Responder, PostError> {
     info!("로깅 테스트");
@@ -56,17 +52,8 @@ pub async fn create_posts(
     _body: web::Json<PostData>,
     pool: Data<PgPool>,
 ) -> Result<HttpResponse, PostError> {
-    let post = PostData {
-        id: Some(Uuid::new_v4().to_string()),
-        .._body.into_inner()
-    };
-
-    let conn = &mut pool.get().expect("Couldn't get DB connection from pool");
-
-    diesel::insert_into(posts)
-        .values(post)
-        .execute(conn)
-        .expect("Error creating new post");
+    let post_data = _body.into_inner();
+    PostData::create_posts(post_data, &pool);
 
     Ok(HttpResponse::Ok()
         .content_type(ContentType::json())
@@ -78,23 +65,8 @@ pub async fn update_posts(
     pool: Data<PgPool>,
 ) -> Result<HttpResponse, PostError> {
     let post_data = _body.into_inner();
-    let updated_date = Some(Utc::now().naive_utc());
     if post_data.id.is_some() {
-        let conn = &mut pool.get().expect("Couldn't get DB connection from pool");
-
-        let post = PostData {
-            id: None,
-            updated_at: updated_date,
-            ..post_data
-        };
-
-        if diesel::update(posts.find(post_data.id.unwrap()))
-            .set(post)
-            // .get_result::<Post>(conn)
-            .execute(conn)
-            .expect("Error updating post by id")
-            == 0
-        {
+        if PostData::update_posts(post_data, &pool) == Ok(0) {
             Err(PostError::BadClientData)
         } else {
             Ok(HttpResponse::Ok()
@@ -112,13 +84,7 @@ pub async fn delete_posts_by_id(
     pool: Data<PgPool>,
 ) -> Result<HttpResponse, PostError> {
     if let Some(post_id) = req.match_info().get("id") {
-        let conn = &mut pool.get().expect("Couldn't get DB connection from pool");
-
-        if diesel::delete(posts.find(post_id))
-            .execute(conn)
-            .expect("Error deleting post by id")
-            == 0
-        {
+        if Post::delete_posts_by_id(&pool, post_id) == Ok(0) {
             Err(PostError::BadClientData)
         } else {
             Ok(HttpResponse::Ok()

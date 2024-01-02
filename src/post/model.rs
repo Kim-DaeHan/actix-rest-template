@@ -1,9 +1,11 @@
 use crate::database::PgPool;
 use crate::schema::posts::{self, dsl::*};
 use actix_web::web::Data;
+use chrono::Utc;
 use diesel::prelude::*;
 use diesel::{result::Error, AsChangeset, Insertable, Queryable};
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Queryable)]
 #[diesel(table_name = crate::schema::posts)]
@@ -66,5 +68,42 @@ impl Post {
         // .first::<(String, String, String, bool)>(conn)
         // load: 여러 레코드를 로드하고 벡터로 반환, 결과를 단일 값이 아닌 여러 레코드로 받아오려 할 때 사용
         // .load::<(String, String, String, bool)>(conn)
+    }
+
+    pub fn delete_posts_by_id(pool: &Data<PgPool>, post_id: &str) -> Result<usize, Error> {
+        let conn = &mut pool.get().expect("Couldn't get DB connection from pool");
+        diesel::delete(posts.find(post_id)).execute(conn)
+    }
+}
+
+impl PostData {
+    pub fn create_posts(post_data: PostData, pool: &Data<PgPool>) {
+        let post = PostData {
+            id: Some(Uuid::new_v4().to_string()),
+            ..post_data
+        };
+
+        let conn = &mut pool.get().expect("Couldn't get DB connection from pool");
+
+        diesel::insert_into(posts)
+            .values(post)
+            .execute(conn)
+            .expect("Error creating new post");
+    }
+
+    pub fn update_posts(post_data: PostData, pool: &Data<PgPool>) -> Result<usize, Error> {
+        let conn = &mut pool.get().expect("Couldn't get DB connection from pool");
+        let updated_date = Some(Utc::now().naive_utc());
+
+        let post = PostData {
+            id: None,
+            updated_at: updated_date,
+            ..post_data
+        };
+
+        diesel::update(posts.find(post_data.id.unwrap()))
+            .set(post)
+            // .get_result::<Post>(conn)
+            .execute(conn)
     }
 }
