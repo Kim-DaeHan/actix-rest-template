@@ -2,7 +2,7 @@
 FROM rust:latest
 
 # Create a new directory to work in
-WORKDIR /usr/src/my_actix_app
+WORKDIR /usr/src/actix_rest_template
 
 # Copy the source code into the container
 COPY . .
@@ -14,4 +14,4 @@ RUN cargo build --release
 EXPOSE 8080
 
 # Command to run the application
-CMD ["cargo", "run"]
+CMD ["target/release/actix-rest-template"]
