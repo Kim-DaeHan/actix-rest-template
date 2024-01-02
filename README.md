@@ -28,32 +28,34 @@ This is a template project for building a REST API using the Actix web framework
 
    The server will start at http://localhost:8080.
 
-3. Explore the API using your preferred API client or tools like cURL, Postman, or curl: - Get all post:
+3. Explore the API using your preferred API client or tools like cURL, Postman, or curl:
 
-   ```bash
-   curl http://localhost:8080/api/posts
-   ```
+- Get all post:
 
-Get a specific post:
+  ```bash
+  curl http://localhost:8080/api/posts
+  ```
 
-    ```bash
-    curl http://localhost:8080/api/posts/{id}
-    ```
+- Get a specific post:
 
-Create a new post:
+  ```bash
+  curl http://localhost:8080/api/posts/{id}
+  ```
 
-    ```bash
-    curl -X POST -H "Content-Type: application/json" -d '{"title": "New Post", "body": "Post Body", "published": true}' http://localhost:8080/api/posts
-    ```
+- Create a new post:
 
-Update an post:
+  ```bash
+  curl -X POST -H "Content-Type: application/json" -d '{"title": "New Post", "body": "Post Body", "published": true}' http://localhost:8080/api/posts
+  ```
 
-    ```bash
-    curl -X PUT  -H "Content-Type: application/json" -d '{"id": "uuid", "title": "Update Post", "body": "Update Body", "published": true}' http://localhost:8080/api/posts
-    ```
+- Update an post:
 
-Delete an item:
+  ```bash
+  curl -X PUT  -H "Content-Type: application/json" -d '{"id": "uuid", "title": "Update Post", "body": "Update Body", "published": true}' http://localhost:8080/api/posts
+  ```
 
-    ```bash
-    curl -X DELETE http://localhost:8080/api/posts/{id}
-    ```
+- Delete an item:
+
+  ```bash
+  curl -X DELETE http://localhost:8080/api/posts/{id}
+  ```
