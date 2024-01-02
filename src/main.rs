@@ -1,4 +1,5 @@
 use actix_cors::Cors;
+use actix_rest_template::*;
 use actix_web::{
     http::{self, StatusCode},
     middleware::{ErrorHandlers, Logger},
@@ -7,7 +8,6 @@ use actix_web::{
 };
 use diesel::RunQueryDsl;
 use env_logger::Env;
-use my_actix_app::*;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
