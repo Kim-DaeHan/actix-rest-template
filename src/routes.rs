@@ -11,5 +11,5 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
 async fn my_handler() -> impl Responder {
     HttpResponse::Ok()
         .content_type(ContentType::json())
-        .body("Hello, Actix!222222가나다라")
+        .body("my handler test!!!")
 }
