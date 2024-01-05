@@ -28,7 +28,7 @@ async fn main() -> std::io::Result<()> {
             // 에러 핸들러 미들웨어
             .wrap(ErrorHandlers::new().handler(
                 StatusCode::INTERNAL_SERVER_ERROR,
-                error_handler::error_handler,
+                middleware::error_handler::error_handler,
             ))
             // 로깅 미들웨어
             .wrap(Logger::default())
