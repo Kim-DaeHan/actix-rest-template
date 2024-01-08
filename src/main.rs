@@ -41,6 +41,7 @@ async fn main() -> std::io::Result<()> {
                     .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
                     .max_age(3600),
             )
+            .wrap(middleware::req_res_middleware::SayHi)
             .app_data(Data::new(pool.clone()))
             .service(scope("/api").configure(routes::configure))
             .route(
