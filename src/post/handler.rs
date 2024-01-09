@@ -38,9 +38,10 @@ pub async fn get_posts_by_id(
         } else {
             // id로 조회했는데 없을 경우
             // Err(MyError::InternalError)
-            Ok(HttpResponse::Ok()
-                .content_type(ContentType::json())
-                .body("no result"))
+            Err(PostError::BadClientData)
+            // Ok(HttpResponse::Ok()
+            //     .content_type(ContentType::json())
+            //     .body("no result"))
         }
     } else {
         // id가 없는 경우에도 에러 처리
