@@ -22,6 +22,9 @@ pub enum PostError {
 
     #[display(fmt = "timeout")]
     Timeout,
+
+    #[display(fmt = "Validation error on field: {}", field)]
+    ValidationError { field: String },
 }
 
 impl ResponseError for PostError {
@@ -41,6 +44,7 @@ impl ResponseError for PostError {
             PostError::InternalError => StatusCode::INTERNAL_SERVER_ERROR,
             PostError::BadClientData => StatusCode::BAD_REQUEST,
             PostError::Timeout => StatusCode::GATEWAY_TIMEOUT,
+            PostError::ValidationError { .. } => StatusCode::BAD_REQUEST,
         }
     }
 }

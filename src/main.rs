@@ -12,8 +12,8 @@ use env_logger::Env;
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv::dotenv().ok();
-    // 로깅 초기화
-    env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
+    // 로깅 초기화(로그 레벨 설정)
+    env_logger::Builder::from_env(Env::default().default_filter_or("debug")).init();
 
     let pool = database::establish_connection();
     let mut connection = pool.get().expect("Failed to get connection from pool");

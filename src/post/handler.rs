@@ -21,7 +21,9 @@ pub async fn get_posts(pool: Data<PgPool>) -> Result<impl Responder, PostError> 
             .body(json_bytes))
     } else {
         // 서버 에러
-        Err(PostError::InternalError)
+        Err(PostError::ValidationError {
+            field: ("aaa").to_string(),
+        })
     }
 }
 
