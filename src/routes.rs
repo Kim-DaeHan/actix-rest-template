@@ -1,6 +1,6 @@
 use actix_web::{http::header::ContentType, web, HttpResponse, Responder};
 
-use crate::post::route;
+use crate::api::post::route;
 
 pub fn configure(cfg: &mut web::ServiceConfig) {
     cfg.service(web::resource("/").route(web::get().to(my_handler)));

@@ -1,4 +1,4 @@
-use crate::post::handler;
+use crate::api::post::handler;
 use actix_web::web;
 
 pub fn configure(cfg: &mut web::ServiceConfig) {

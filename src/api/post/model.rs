@@ -39,7 +39,9 @@ pub struct PostData {
 // 따라서 &'a str과 같이 라이프타임이 있는 참조를 사용하여 문자열을 참조하고, 데이터베이스에는 참조만 전달합니다.
 
 impl Post {
-    pub fn get_posts(pool: &Data<PgPool>) -> Result<Vec<(String, String, String, bool)>, Error> {
+    pub async fn get_posts(
+        pool: &Data<PgPool>,
+    ) -> Result<Vec<(String, String, String, bool)>, Error> {
         let conn = &mut pool.get().expect("Couldn't get DB connection from pool");
 
         posts
@@ -47,15 +49,15 @@ impl Post {
             .load::<(String, String, String, bool)>(conn)
     }
 
-    pub fn get_posts_load(pool: &Data<PgPool>) -> Result<Vec<Post>, Error> {
+    pub async fn get_posts_load(pool: &Data<PgPool>) -> Result<Vec<Post>, Error> {
         let conn = &mut pool.get().expect("Couldn't get DB connection from pool");
         // use crate::schema::posts::{dsl::*}로 인해서 posts::table을 posts로 사용가능
         posts.load::<Post>(conn)
     }
 
-    pub fn get_posts_by_id(
-        pool: &Data<PgPool>,
+    pub async fn get_posts_by_id(
         post_id: &str,
+        pool: &Data<PgPool>,
     ) -> Result<(String, String, String, bool), Error> {
         let conn = &mut pool.get().expect("Couldn't get DB connection from pool");
         posts
@@ -70,14 +72,14 @@ impl Post {
         // .load::<(String, String, String, bool)>(conn)
     }
 
-    pub fn delete_posts_by_id(pool: &Data<PgPool>, post_id: &str) -> Result<usize, Error> {
+    pub async fn delete_posts_by_id(post_id: &str, pool: &Data<PgPool>) -> Result<usize, Error> {
         let conn = &mut pool.get().expect("Couldn't get DB connection from pool");
         diesel::delete(posts.find(post_id)).execute(conn)
     }
 }
 
 impl PostData {
-    pub fn create_posts(post_data: PostData, pool: &Data<PgPool>) {
+    pub async fn create_posts(post_data: PostData, pool: &Data<PgPool>) -> Result<(), Error> {
         let post = PostData {
             id: Some(Uuid::new_v4().to_string()),
             ..post_data
@@ -85,13 +87,11 @@ impl PostData {
 
         let conn = &mut pool.get().expect("Couldn't get DB connection from pool");
 
-        diesel::insert_into(posts)
-            .values(post)
-            .execute(conn)
-            .expect("Error creating new post");
+        diesel::insert_into(posts).values(post).execute(conn)?;
+        Ok(())
     }
 
-    pub fn update_posts(post_data: PostData, pool: &Data<PgPool>) -> Result<usize, Error> {
+    pub async fn update_posts(post_data: PostData, pool: &Data<PgPool>) -> Result<usize, Error> {
         let conn = &mut pool.get().expect("Couldn't get DB connection from pool");
         let updated_date = Some(Utc::now().naive_utc());
 
